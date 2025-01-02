@@ -7,6 +7,43 @@
   .close-first{
     display: none;
   }
+  .header-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+input[type="text"], input[type="date"] {
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    margin-bottom: 0;
+    width: 18rem;
+    padding-left: 10px;
+}
+
+input[type="text"]:focus, input[type="date"]:focus {
+    border-color: #007BFF;
+    margin-bottom: 0;
+}
+
+.search-btn {
+    font-size: 16px;
+    color: #fff;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 8rem;
+}
+
+.search-btn:hover {
+    background-color: #0056b3;
+}
   </style>
 </head><br>
 <div class="row" style="padding-left:10px;padding-right:10px">
@@ -23,12 +60,13 @@
           <div class="input-field col s12 m1 right" style="margin-top:5px; width:160px">
             <button id="suggestbutton" class="waves-effect waves-light btn blue lighten-2">Suggest</button>
           </div>
-          <div class="file-field input-field col s12 m1 right" style="margin-top:5px; width:160px">
-            <div class="btn blue lighten-2" style="height:36px; line-height:2.5rem">
-              <span>Pick CSV</span>
-              <input id="uploadcsv" type="file">
-            </div>
-          </div>
+    
+          <div class="header-container">
+            <input type="text" id="userInput" placeholder="Enter Stock Ticker">
+            <input type="date" id="fromDate">
+            <input type="date" id="toDate">
+            <button class="search-btn" onclick="completeFn()">Search</button>
+        </div>
         </div>
       </div>
       <div class="collapsible-body"><span>

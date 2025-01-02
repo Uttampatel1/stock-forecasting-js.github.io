@@ -53,30 +53,56 @@ function errorFn(err, file) {
     Materialize.toast("ERROR: " + err + file,3000)
 }
 
-function completeFn(results) {
-  if (results && results.errors) {
-    if (results.errors) {
-      errorCount = results.errors.length;
-      firstError = results.errors[0]
+window.onload = function() {
+  const today = new Date();
+  const yearAgo = new Date();
+  yearAgo.setFullYear(today.getFullYear() - 1);
+
+  document.getElementById('toDate').value = today.toISOString().split('T')[0];
+  document.getElementById('fromDate').value = yearAgo.toISOString().split('T')[0];
+};
+
+async function completeFn(results) {
+ 
+  const inputText = document.getElementById('userInput').value;
+  const fromDate = document.getElementById('fromDate').value;
+  const toDate = document.getElementById('toDate').value;
+
+  const fromTimestamp = new Date(fromDate).getTime() / 1000;
+  const toTimestamp = new Date(toDate).getTime() / 1000;
+
+    
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${inputText}?period1=${fromTimestamp}&period2=${toTimestamp}&interval=1d`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+      Materialize.toast('Error fetching data for ' + ticker, 4000);
+      return;
     }
-    if (results.data && results.data.length > 0)
-    rowCount = results.data.length
-  }
-  csv = results['data'];
-  for(var i = 0;i<csv[0].length;i++) indeces[csv[0][i].toLowerCase()] = i;
-  stocks = [];
-  volume = [];
-  stock_date = [];
-  for(var i = 1;i<csv.length;i++){
-    if(!isNaN(csv[i][indeces['open']]) && !isNaN(csv[i][indeces['close']]) && !isNaN(csv[i][indeces['low']]) && !isNaN(csv[i][indeces['high']]) && !isNaN(csv[i][indeces['volume']])){
-      stocks.push([parseFloat(csv[i][indeces['open']]),
-      parseFloat(csv[i][indeces['close']]),
-      parseFloat(csv[i][indeces['low']]),
-      parseFloat(csv[i][indeces['high']])]);
-      volume.push(csv[i][indeces['volume']]);
-      stock_date.push(csv[i][indeces['date']]);
+    
+    const result = data.chart.result[0];
+    const quotes = result.indicators.quote[0];
+
+    stocks = [];
+    volume = [];
+    stock_date = [];
+    
+    for (let i = 0; i < result.timestamp.length; i++) {
+      if (quotes.open[i] && quotes.close[i] && quotes.low[i] && quotes.high[i] && quotes.volume[i]) {
+        stocks.push([
+          quotes.open[i],
+          quotes.close[i],
+          quotes.low[i],
+          quotes.high[i]
+        ]);
+        volume.push(quotes.volume[i]);
+        stock_date.push(new Date(result.timestamp[i] * 1000).toISOString().split('T')[0]);
+      }
     }
-  }
+
+ 
   close = stocks.map(function(el, idx) {
     return el[1];
   })
@@ -1356,4 +1382,45 @@ function plot_pairplot(val){
   generate_investment(['total investment(%): ','total gains: ','stock changes: ','stock changes (%): ','gold changes(%): ','crude oil changes(%): '],
 [total_investment.toFixed(2), total_gain.toFixed(2), stock_changes.toFixed(2),
   stock_changes_percent.toFixed(2),(val['gain_crude_oil']*100).toFixed(2),(val['gain_gold']*100).toFixed(2)])
+}
+
+async function getInput() {
+  const inputText = document.getElementById('userInput').value;
+  console.log(inputText);
+  const endDate = Math.floor(Date.now() / 1000);
+    const startDate = endDate - (365 * 24 * 60 * 60); // Last 1 year of data
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${inputText}?period1=${startDate}&period2=${endDate}&interval=1d`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+      Materialize.toast('Error fetching data for ' + ticker, 4000);
+      return;
+    }
+    
+    const result = data.chart.result[0];
+    const quotes = result.indicators.quote[0];
+
+    stocks = [];
+    volume = [];
+    stock_date = [];
+    
+    for (let i = 0; i < result.timestamp.length; i++) {
+      if (quotes.open[i] && quotes.close[i] && quotes.low[i] && quotes.high[i] && quotes.volume[i]) {
+        stocks.push({
+          open: quotes.open[i],
+          close: quotes.close[i],
+          low: quotes.low[i],
+          high: quotes.high[i],
+          date: new Date(result.timestamp[i] * 1000).toISOString().split('T')[0]
+      });
+        volume.push(quotes.volume[i]);
+        stock_date.push(new Date(result.timestamp[i] * 1000).toISOString().split('T')[0]);
+      }
+    }
+
+    console.log(stocks);
+    
+    
 }
