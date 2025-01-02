@@ -1,124 +1,295 @@
-var color_list = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'];
-var colors = ['#5793f3', '#d14a61', '#675bba','#b62f46'];
-var close = GOOGLE['data'].map(function(el, idx) {
-  return el[1];
-})
-var stocks = GOOGLE['data'].map(function(el, idx) {
-  return [el[0],el[1],el[3],el[2]];
-})
-var stock_date = GOOGLE['date'];
-var volume = GOOGLE['volume'];
-var csv;
-var indeces = {};
-var dataMA5, dataMA10, dataMA20, dataMA30;
-var total_investment, total_gain, stock_changes, stock_changes_percent
+// var color_list = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83',  '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'];
+// var colors = ['#5793f3', '#d14a61', '#675bba','#b62f46'];
+// var close = GOOGLE['data'].map(function(el, idx) {
+//   return el[1];
+// })
+// var stocks = GOOGLE['data'].map(function(el, idx) {
+//   return [el[0],el[1],el[3],el[2]];
+// })
+// var stock_date = GOOGLE['date'];
+// var volume = GOOGLE['volume'];
+// var csv;
+// var indeces = {};
+// var dataMA5, dataMA10, dataMA20, dataMA30;
+// var total_investment, total_gain, stock_changes, stock_changes_percent
 
-function smoothing_line(scalars,weight){
-  last = scalars[0]
-  smoothed = []
-  for(var i = 0; i < scalars.length;i++){
-    smoothed_val = last * weight + (1 - weight) * scalars[i]
-    smoothed.push(smoothed_val)
-    last = smoothed_val
+// function smoothing_line(scalars,weight){
+//   last = scalars[0]
+//   smoothed = []
+//   for(var i = 0; i < scalars.length;i++){
+//     smoothed_val = last * weight + (1 - weight) * scalars[i]
+//     smoothed.push(smoothed_val)
+//     last = smoothed_val
+//   }
+//   return smoothed
+// }
+
+// function generate_investment(strings,values){
+//   colors = "";
+//   for(var i = 0; i < strings.length;i++){
+//     if(values[i]>=0) colors += "<div class='col s12 m2'><div class='card'><div class='card-content'><a class='btn-floating waves-effect waves-light green' style='width:100px;height:100px;margin-bottom:20px'><i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_upward</i></a><p><h6>"+strings[i]+values[i]+"</h6></p></div></div></div>";
+//     else colors += "<div class='col s12 m2'><div class='card'><div class='card-content'><a class='btn-floating waves-effect waves-light red' style='width:100px;height:100px;margin-bottom:20px'><i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_downward</i></a><p><h6>"+strings[i]+values[i]+"</h6></p></div></div></div>";
+//   }
+//   $('#color-investment').html(colors);
+// }
+
+// function buildConfig() {
+//   return {
+//     delimiter: $('#delimiter').val(),
+//     header: $('#header').prop('checked'),
+//     dynamicTyping: $('#dynamicTyping').prop('checked'),
+//     skipEmptyLines: $('#skipEmptyLines').prop('checked'),
+//     preview: parseInt($('#preview').val() || 0),
+//     step: $('#stream').prop('checked') ? stepFn : undefined,
+//     encoding: $('#encoding').val(),
+//     worker: $('#worker').prop('checked'),
+//     comments: $('#comments').val(),
+//     complete: completeFn,
+//     error: errorFn
+//   }
+// }
+
+// function errorFn(err, file) {
+//     Materialize.toast("ERROR: " + err + file,3000)
+// }
+
+// function completeFn(results) {
+//   if (results && results.errors) {
+//     if (results.errors) {
+//       errorCount = results.errors.length;
+//       firstError = results.errors[0]
+//     }
+//     if (results.data && results.data.length > 0)
+//     rowCount = results.data.length
+//   }
+//   csv = results['data'];
+//   for(var i = 0;i<csv[0].length;i++) indeces[csv[0][i].toLowerCase()] = i;
+//   stocks = [];
+//   volume = [];
+//   stock_date = [];
+//   for(var i = 1;i<csv.length;i++){
+//     if(!isNaN(csv[i][indeces['open']]) && !isNaN(csv[i][indeces['close']]) && !isNaN(csv[i][indeces['low']]) && !isNaN(csv[i][indeces['high']]) && !isNaN(csv[i][indeces['volume']])){
+//       stocks.push([parseFloat(csv[i][indeces['open']]),
+//       parseFloat(csv[i][indeces['close']]),
+//       parseFloat(csv[i][indeces['low']]),
+//       parseFloat(csv[i][indeces['high']])]);
+//       volume.push(csv[i][indeces['volume']]);
+//       stock_date.push(csv[i][indeces['date']]);
+//     }
+//   }
+//   close = stocks.map(function(el, idx) {
+//     return el[1];
+//   })
+//   plot_stock();
+// }
+
+// var csv, config = buildConfig();
+// $('#uploadcsv').change(function() {
+//     csv = null;
+//     file = document.getElementById('uploadcsv');
+//     if ($(this).val().search('.csv') <= 0) {
+//         $(this).val('');
+//         Materialize.toast('Only support CSV', 4000);
+//         return
+//     }
+//     $(this).parse({
+//         config: config
+//     })
+// })
+
+// function calculate_distribution(real,predict){
+//   data_plot = []
+//   data_arr = [real,predict]
+//   for(var outer = 0; outer < data_arr.length;outer++){
+//     data = data_arr[outer]
+//     max_arr = Math.max(...data)
+//     min_arr = Math.min(...data)
+//     num_bins = Math.ceil(Math.sqrt(data.length));
+//     kde = kernelDensityEstimator(epanechnikovKernel(max_arr/50), arange(min_arr,max_arr,(max_arr-min_arr)/num_bins))
+//     kde = kde(data)
+//     bar_x = [], bar_y = []
+//     for(var i = 0; i < kde.length;i++){
+//       bar_x.push(kde[i][0])
+//       bar_y.push(kde[i][1])
+//     }
+//     min_line_y = Math.min(...bar_y)
+//     for(var i = 0; i < bar_y.length;i++) bar_y[i] -= min_line_y
+//     data_plot.push({'bar_x':bar_x,'bar_y':bar_y})
+//   }
+//   option = {
+//     color: colors,
+
+//     tooltip: {
+//       trigger: 'axis',
+//       axisPointer: {
+//         type: 'cross'
+//       }
+//     },
+//     legend: {
+//       data:['real histogram','predict histogram']
+//     },
+//     xAxis: [
+//       {
+//         type: 'category',
+//         data: data_plot[0]['bar_x']
+//       },
+//       {
+//         type: 'category',
+//         data: data_plot[1]['bar_x']
+//       }
+//     ],
+//     yAxis: {
+//       type: 'value'
+//     },
+//     series: [
+//       {
+//         name:'real histogram',
+//         type:'bar',
+//         data:data_plot[0]['bar_y']
+//       },
+//       {
+//         name:'predict histogram',
+//         type:'bar',
+//         data:data_plot[1]['bar_y'].slice(0,data_plot[1]['bar_y'].length-2)
+//       }
+//     ]
+//   };
+//   var bar_plot = echarts.init(document.getElementById('div_dist'));
+//   bar_plot.setOption(option,true);
+// }
+
+////////////////////////////////////////////////////////-------------------------------------------------------------------------------
+
+
+var color_list = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622', '#bda29a','#6e7074', '#546570', '#c4ccd3'];
+var colors = ['#5793f3', '#d14a61', '#675bba','#b62f46'];
+
+// Initialize with empty arrays instead of GOOGLE data
+var stocks = [];
+var close = [];
+var stock_date = [];
+var volume = [];
+var dataMA5, dataMA10, dataMA20, dataMA30;
+var total_investment, total_gain, stock_changes, stock_changes_percent;
+
+// Yahoo Finance data fetching function
+async function fetchYahooFinanceData(ticker) {
+  try {
+    const endDate = Math.floor(Date.now() / 1000);
+    const startDate = endDate - (365 * 24 * 60 * 60); // Last 1 year of data
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${startDate}&period2=${endDate}&interval=1d`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+      Materialize.toast('Error fetching data for ' + ticker, 4000);
+      return false;
+    }
+    
+    const result = data.chart.result[0];
+    const quotes = result.indicators.quote[0];
+    
+    // Reset arrays
+    stocks = [];
+    volume = [];
+    stock_date = [];
+    
+    for (let i = 0; i < result.timestamp.length; i++) {
+      if (quotes.open[i] && quotes.close[i] && quotes.low[i] && quotes.high[i] && quotes.volume[i]) {
+        stocks.push([
+          quotes.open[i],
+          quotes.close[i],
+          quotes.low[i],
+          quotes.high[i]
+        ]);
+        volume.push(quotes.volume[i]);
+        stock_date.push(new Date(result.timestamp[i] * 1000).toISOString().split('T')[0]);
+      }
+    }
+    
+    close = stocks.map(function(el) {
+      return el[1];
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    Materialize.toast('Error fetching data: ' + error.message, 4000);
+    return false;
   }
-  return smoothed
 }
 
-function generate_investment(strings,values){
-  colors = "";
-  for(var i = 0; i < strings.length;i++){
-    if(values[i]>=0) colors += "<div class='col s12 m2'><div class='card'><div class='card-content'><a class='btn-floating waves-effect waves-light green' style='width:100px;height:100px;margin-bottom:20px'><i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_upward</i></a><p><h6>"+strings[i]+values[i]+"</h6></p></div></div></div>";
-    else colors += "<div class='col s12 m2'><div class='card'><div class='card-content'><a class='btn-floating waves-effect waves-light red' style='width:100px;height:100px;margin-bottom:20px'><i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_downward</i></a><p><h6>"+strings[i]+values[i]+"</h6></p></div></div></div>";
+function smoothing_line(scalars, weight) {
+  let last = scalars[0];
+  let smoothed = [];
+  for(let i = 0; i < scalars.length; i++) {
+    let smoothed_val = last * weight + (1 - weight) * scalars[i];
+    smoothed.push(smoothed_val);
+    last = smoothed_val;
+  }
+  return smoothed;
+}
+
+function generate_investment(strings, values) {
+  let colors = "";
+  for(let i = 0; i < strings.length; i++) {
+    if(values[i] >= 0) {
+      colors += `<div class='col s12 m2'>
+        <div class='card'>
+          <div class='card-content'>
+            <a class='btn-floating waves-effect waves-light green' style='width:100px;height:100px;margin-bottom:20px'>
+              <i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_upward</i>
+            </a>
+            <p><h6>${strings[i]}${values[i]}</h6></p>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      colors += `<div class='col s12 m2'>
+        <div class='card'>
+          <div class='card-content'>
+            <a class='btn-floating waves-effect waves-light red' style='width:100px;height:100px;margin-bottom:20px'>
+              <i class='material-icons' style='font-size:3rem; line-height:95px'>arrow_downward</i>
+            </a>
+            <p><h6>${strings[i]}${values[i]}</h6></p>
+          </div>
+        </div>
+      </div>`;
+    }
   }
   $('#color-investment').html(colors);
 }
 
-function buildConfig() {
-  return {
-    delimiter: $('#delimiter').val(),
-    header: $('#header').prop('checked'),
-    dynamicTyping: $('#dynamicTyping').prop('checked'),
-    skipEmptyLines: $('#skipEmptyLines').prop('checked'),
-    preview: parseInt($('#preview').val() || 0),
-    step: $('#stream').prop('checked') ? stepFn : undefined,
-    encoding: $('#encoding').val(),
-    worker: $('#worker').prop('checked'),
-    comments: $('#comments').val(),
-    complete: completeFn,
-    error: errorFn
-  }
-}
-
-function errorFn(err, file) {
-    Materialize.toast("ERROR: " + err + file,3000)
-}
-
-function completeFn(results) {
-  if (results && results.errors) {
-    if (results.errors) {
-      errorCount = results.errors.length;
-      firstError = results.errors[0]
+function calculate_distribution(real, predict) {
+  let data_plot = [];
+  let data_arr = [real, predict];
+  
+  for(let outer = 0; outer < data_arr.length; outer++) {
+    let data = data_arr[outer];
+    let max_arr = Math.max(...data);
+    let min_arr = Math.min(...data);
+    let num_bins = Math.ceil(Math.sqrt(data.length));
+    let kde = kernelDensityEstimator(epanechnikovKernel(max_arr/50), 
+                                   arange(min_arr, max_arr, (max_arr-min_arr)/num_bins));
+    kde = kde(data);
+    
+    let bar_x = [], bar_y = [];
+    for(let i = 0; i < kde.length; i++) {
+      bar_x.push(kde[i][0]);
+      bar_y.push(kde[i][1]);
     }
-    if (results.data && results.data.length > 0)
-    rowCount = results.data.length
-  }
-  csv = results['data'];
-  for(var i = 0;i<csv[0].length;i++) indeces[csv[0][i].toLowerCase()] = i;
-  stocks = [];
-  volume = [];
-  stock_date = [];
-  for(var i = 1;i<csv.length;i++){
-    if(!isNaN(csv[i][indeces['open']]) && !isNaN(csv[i][indeces['close']]) && !isNaN(csv[i][indeces['low']]) && !isNaN(csv[i][indeces['high']]) && !isNaN(csv[i][indeces['volume']])){
-      stocks.push([parseFloat(csv[i][indeces['open']]),
-      parseFloat(csv[i][indeces['close']]),
-      parseFloat(csv[i][indeces['low']]),
-      parseFloat(csv[i][indeces['high']])]);
-      volume.push(csv[i][indeces['volume']]);
-      stock_date.push(csv[i][indeces['date']]);
+    
+    let min_line_y = Math.min(...bar_y);
+    for(let i = 0; i < bar_y.length; i++) {
+      bar_y[i] -= min_line_y;
     }
+    
+    data_plot.push({'bar_x': bar_x, 'bar_y': bar_y});
   }
-  close = stocks.map(function(el, idx) {
-    return el[1];
-  })
-  plot_stock();
-}
-
-var csv, config = buildConfig();
-$('#uploadcsv').change(function() {
-    csv = null;
-    file = document.getElementById('uploadcsv');
-    if ($(this).val().search('.csv') <= 0) {
-        $(this).val('');
-        Materialize.toast('Only support CSV', 4000);
-        return
-    }
-    $(this).parse({
-        config: config
-    })
-})
-
-function calculate_distribution(real,predict){
-  data_plot = []
-  data_arr = [real,predict]
-  for(var outer = 0; outer < data_arr.length;outer++){
-    data = data_arr[outer]
-    max_arr = Math.max(...data)
-    min_arr = Math.min(...data)
-    num_bins = Math.ceil(Math.sqrt(data.length));
-    kde = kernelDensityEstimator(epanechnikovKernel(max_arr/50), arange(min_arr,max_arr,(max_arr-min_arr)/num_bins))
-    kde = kde(data)
-    bar_x = [], bar_y = []
-    for(var i = 0; i < kde.length;i++){
-      bar_x.push(kde[i][0])
-      bar_y.push(kde[i][1])
-    }
-    min_line_y = Math.min(...bar_y)
-    for(var i = 0; i < bar_y.length;i++) bar_y[i] -= min_line_y
-    data_plot.push({'bar_x':bar_x,'bar_y':bar_y})
-  }
-  option = {
+  
+  let option = {
     color: colors,
-
     tooltip: {
       trigger: 'axis',
       axisPointer: {
@@ -126,7 +297,7 @@ function calculate_distribution(real,predict){
       }
     },
     legend: {
-      data:['real histogram','predict histogram']
+      data: ['real histogram', 'predict histogram']
     },
     xAxis: [
       {
@@ -143,20 +314,62 @@ function calculate_distribution(real,predict){
     },
     series: [
       {
-        name:'real histogram',
-        type:'bar',
-        data:data_plot[0]['bar_y']
+        name: 'real histogram',
+        type: 'bar',
+        data: data_plot[0]['bar_y']
       },
       {
-        name:'predict histogram',
-        type:'bar',
-        data:data_plot[1]['bar_y'].slice(0,data_plot[1]['bar_y'].length-2)
+        name: 'predict histogram',
+        type: 'bar',
+        data: data_plot[1]['bar_y'].slice(0, data_plot[1]['bar_y'].length-2)
       }
     ]
   };
-  var bar_plot = echarts.init(document.getElementById('div_dist'));
-  bar_plot.setOption(option,true);
+  
+  let bar_plot = echarts.init(document.getElementById('div_dist'));
+  bar_plot.setOption(option, true);
 }
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Materialize components
+  var elems = document.querySelectorAll('.collapsible');
+  var instances = M.Collapsible.init(elems);
+  
+  // Add fetch button listener
+  document.getElementById('fetchData').addEventListener('click', async function() {
+    const ticker = document.getElementById('ticker').value.toUpperCase();
+    if (!ticker) {
+      Materialize.toast('Please enter a ticker symbol', 2000);
+      return;
+    }
+    
+    // Show loading state
+    this.disabled = true;
+    this.textContent = 'Loading...';
+    
+    const success = await fetchYahooFinanceData(ticker);
+    
+    // Reset button state
+    this.disabled = false;
+    this.textContent = 'Fetch Data';
+    
+    if (success) {
+      // Update the chart
+      plot_stock();
+      Materialize.toast('Data loaded for ' + ticker, 2000);
+    }
+  });
+  
+  // Add ticker input Enter key listener
+  document.getElementById('ticker').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      document.getElementById('fetchData').click();
+    }
+  });
+});
+
+////////////////////////////////////////////////////////-------------------------------------------------------------------------------
 
 function calculateMA(dayCount, data) {
   var result = [];
